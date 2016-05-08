@@ -86,7 +86,6 @@ class TextureAtlas
 	{
 		mSubTextures = new Map<String, Texture>();
 		mAtlasTexture = texture;
-		
 		if (atlasXml != null)
 			parseAtlasXml(atlasXml);
 	}
@@ -102,45 +101,43 @@ class TextureAtlas
 	 *  (e.g. to support a different file format). */
 	private function parseAtlasXml(atlasXml:Xml):Void
 	{
-		trace("FIX");
-		var scale:Float = mAtlasTexture.scale;
-		var region:Rectangle = new Rectangle();
-		var frame:Rectangle  = new Rectangle();
 		
-		for (element in atlasXml.firstElement()) {
-			if (element.nodeType == Xml.Element ) {
-				
-				var subTexture:Xml = cast element;
-				var name:String        = StarlingUtils.cleanMasterString(subTexture.get("name"));
-				
-				var x:Float           = Std.parseFloat(subTexture.get("x")) / scale;
-				var y:Float           = Std.parseFloat(subTexture.get("y")) / scale;
-				var width:Float       = Std.parseFloat(subTexture.get("width"))  / scale;
-				var height:Float      = Std.parseFloat(subTexture.get("height")) / scale;
-				var frameX:Float      = Std.parseFloat(subTexture.get("frameX")) / scale;
-				var frameY:Float      = Std.parseFloat(subTexture.get("frameY")) / scale;
-				var frameWidth:Float  = Std.parseFloat(subTexture.get("frameWidth"))  / scale;
-				var frameHeight:Float = Std.parseFloat(subTexture.get("frameHeight")) / scale;
-				
-				var rotatedStr:String = subTexture.get("rotated");
-				var rotated:Bool = false;
-				if (rotatedStr != null && rotatedStr.toLowerCase() == "true") rotated = true;
+		var scale = mAtlasTexture.scale;
+		var frame  = new Rectangle();
+		var region = new Rectangle();
+		
+		for (subTexture in atlasXml.firstElement()) {
+			if (subTexture.nodeType == Xml.Element ) {
+				var name        = StarlingUtils.cleanMasterString(subTexture.get("name"));
+				var x           = Std.parseFloat(subTexture.get("x")) / scale;
+				var y           = Std.parseFloat(subTexture.get("y")) / scale;
+				var width       = Std.parseFloat(subTexture.get("width")) / scale;
+				var height      = Std.parseFloat(subTexture.get("height")) / scale;
+				var frameWidth  = Std.parseFloat(subTexture.get("frameWidth")) / scale;
+				var frameHeight = Std.parseFloat(subTexture.get("frameHeight")) / scale;
+				var frameX      = Std.parseFloat(subTexture.get("frameX")) / scale;
+				var frameY      = Std.parseFloat(subTexture.get("frameY")) / scale;
+				var rotatedStr = subTexture.get("rotated");
+				var rotated:Bool    = false;
+				if (rotatedStr != null) rotated = parseBool(subTexture.get("rotated"));
 				
 				region.setTo(x, y, width, height);
 				frame.setTo(frameX, frameY, frameWidth, frameHeight);
 				
-				if (frameWidth > 0 && frameHeight > 0)
-					addRegion(name, region, frame, rotated);
-				else
-					addRegion(name, region, null,  rotated);
+				if (frameWidth > 0 && frameHeight > 0) addRegion(name, region, frame, rotated);
+				else addRegion(name, region, null,  rotated);
 			}
 		}
+		/*for(subTexture in atlasXml.elementsNamed("SubTexture"))
+        {
+			
+        }*/
 	}
 	
 	/** Retrieves a SubTexture by name. Returns <code>null</code> if it is not found. */
 	public function getTexture(name:String):Texture
 	{
-		return mSubTextures[name];
+		return mSubTextures.get(name);
 	}
 	
 	/** Returns all textures that start with a certain string, sorted alphabetically
@@ -190,7 +187,7 @@ class TextureAtlas
 	 *  if no region with that name has been registered. */
 	public function getRegion(name:String):Rectangle
 	{
-		var subTexture:SubTexture = cast mSubTextures[name];
+		var subTexture:SubTexture = cast mSubTextures.get(name);
 		return subTexture != null ? subTexture.region : null;
 	}
 	
@@ -198,7 +195,7 @@ class TextureAtlas
 	 *  has no frame. */
 	public function getFrame(name:String):Rectangle
 	{
-		var subTexture:SubTexture = cast mSubTextures[name];
+		var subTexture:SubTexture = cast mSubTextures.get(name);
 		return subTexture != null ? subTexture.frame : null;
 	}
 	
@@ -206,7 +203,7 @@ class TextureAtlas
 	 *  SubTexture is thus rotated counter-clockwise to cancel out that transformation. */
 	public function getRotation(name:String):Bool
 	{
-		var subTexture:SubTexture = cast mSubTextures[name];
+		var subTexture:SubTexture = cast mSubTextures.get(name);
 		return subTexture != null ? subTexture.rotated : false;
 	}
 
@@ -215,14 +212,14 @@ class TextureAtlas
 	public function addRegion(name:String, region:Rectangle, frame:Rectangle=null,
 							  rotated:Bool=false):Void
 	{
-		mSubTextures[name] = new SubTexture(mAtlasTexture, region, false, frame, rotated);
+		mSubTextures.set(name, new SubTexture(mAtlasTexture, region, false, frame, rotated));
 		mSubTextureNames = null;
 	}
 	
 	/** Removes a region with a certain name. */
 	public function removeRegion(name:String):Void
 	{
-		var subTexture:SubTexture = cast mSubTextures[name];
+		var subTexture:SubTexture = cast mSubTextures.get(name);
 		if (subTexture != null) subTexture.dispose();
 		mSubTextures.remove(name);
 		mSubTextureNames = null;

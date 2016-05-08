@@ -17,4 +17,8 @@ class BlendFactor
 		
 	}
 	
+	public function toString():String
+	{
+		return "Name: " + name + ", factors: " + factors;
+	}
 }

@@ -32,7 +32,7 @@ import starling.events.Event;
 import starling.utils.Color;
 
 /** A ConcreteTexture wraps a Stage3D texture object, storing the properties of the texture. */
-class ConcreteTexture extends Texture
+class ConcreteTexture extends starling.textures.Texture
 {
 	private static var TEXTURE_READY:String = "textureReady"; // defined here for backwards compatibility
 	
@@ -116,9 +116,9 @@ class ConcreteTexture extends Texture
 			data = potData;
 		}
 		
-		if (Std.is(mBase, flash.display3D.textures.Texture))
+		if (Std.is(mBase, openfl.display3D.textures.Texture))
 		{
-			var potTexture:flash.display3D.textures.Texture = cast mBase;
+			var potTexture:openfl.display3D.textures.Texture = cast mBase;
 			
 			potTexture.uploadFromBitmapData(data);
 			
@@ -171,7 +171,7 @@ class ConcreteTexture extends Texture
 	public function uploadAtfData(data:ByteArray, offset:Int=0, async:Dynamic=null):Void
 	{
 		var isAsync:Bool = Reflect.isFunction(async) || async == true;
-		var potTexture:flash.display3D.textures.Texture = cast mBase;
+		var potTexture:openfl.display3D.textures.Texture = cast mBase;
 		
 		if (potTexture == null)
 			throw new Error("This texture type does not support ATF data");
@@ -201,7 +201,7 @@ class ConcreteTexture extends Texture
 	public function attachVideo(type:String, attachment:Dynamic, onComplete:ConcreteTextureFunction=null):Void
 	{
 		var name:String = Type.getClassName(Type.getClass(mBase));
-		if (name == "flash.display3D.textures.VideoTexture")
+		if (name == "openfl.display3D.textures.VideoTexture")
 		{
 			mDataUploaded = true;
 			mTextureReadyCallback = onComplete;
@@ -244,15 +244,15 @@ class ConcreteTexture extends Texture
 	//starling_internal
 	private function createBase():Void
 	{
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		var name:String = Type.getClassName(Type.getClass(mBase));
-		if (name == "flash.display3D.textures.Texture" || name == "openfl.display3D.textures.Texture")
+		if (name == "openfl.display3D.textures.Texture" || name == "flash.display3D.textures.Texture")
 			mBase = context.createTexture(mWidth, mHeight, mFormat, 
 										  mOptimizedForRenderTexture);
-		else if (name == "flash.display3D.textures.RectangleTexture" || name == "openfl.display3D.textures.RectangleTexture")
+		else if (name == "openfl.display3D.textures.RectangleTexture" || name == "flash.display3D.textures.RectangleTexture")
 			mBase = context.createRectangleTexture(mWidth, mHeight, mFormat,
 													  mOptimizedForRenderTexture);
-		/*else if (name == "flash.display3D.textures.VideoTexture")
+		/*else if (name == "openfl.display3D.textures.VideoTexture")
 			mBase = context.createVideoTexture();*/
 		else
 			throw new NotSupportedError("Texture type not supported: " + name);
@@ -265,7 +265,7 @@ class ConcreteTexture extends Texture
 	 *  don't call it from within a render method. */ 
 	public function clear(color:UInt=0x0, alpha:Float=0.0):Void
 	{
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		if (context == null) throw new MissingContextError();
 		
 		if (mPremultipliedAlpha && alpha < 1.0) {
@@ -278,7 +278,7 @@ class ConcreteTexture extends Texture
 		// FP 11.8 plugin/projector: calling clear on a compressed texture doesn't work there
 		// (while it *does* work on iOS + Android).
 		
-		try { RenderSupport.Clear(color, alpha); }
+		try { RenderSupport._clear(color, alpha); }
 		catch (e:Error) {}
 		
 		context.setRenderToBackBuffer();

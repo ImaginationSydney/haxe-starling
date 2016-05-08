@@ -10,6 +10,7 @@ class CharLocation
 	public var scale:Float;
 	public var x:Float;
 	public var y:Float;
+	public var width:Float;
 
 	function new(char:BitmapChar)
 	{

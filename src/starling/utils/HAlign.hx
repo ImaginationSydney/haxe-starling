@@ -22,4 +22,5 @@ enum HAlign {
 	LEFT;
 	RIGHT;
 	CENTER;
+	JUSTIFY;
 }

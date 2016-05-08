@@ -10,26 +10,20 @@
 
 package starling.text;
 
-import starling.errors.AbstractClassError;
-
 /** This class is an enumeration of constant values used in setting the 
  *  autoSize property of the TextField class. */ 
-class TextFieldAutoSize
-{
-	/** @private */
-	public function new() { throw new AbstractClassError(); }
-	
+@:enum abstract TextFieldAutoSize(String) from String to String {
 	/** No auto-sizing will happen. */
-	public static var NONE:String = "none";
+	var NONE = "none";
 	
 	/** The text field will grow to the right; no line-breaks will be added.
 	 *  The height of the text field remains unchanged. */ 
-	public static var HORIZONTAL:String = "horizontal";
+	var HORIZONTAL = "horizontal";
 	
 	/** The text field will grow to the bottom, adding line-breaks when necessary.
 	  * The width of the text field remains unchanged. */
-	public static var VERTICAL:String = "vertical";
+	var VERTICAL = "vertical";
 	
 	/** The text field will grow to the right and bottom; no line-breaks will be added. */
-	public static var BOTH_DIRECTIONS:String = "bothDirections";
+	var BOTH_DIRECTIONS = "bothDirections";
 }

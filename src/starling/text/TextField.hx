@@ -125,6 +125,10 @@ class TextField extends DisplayObjectContainer
 	private static var sHelperMatrix:Matrix = new Matrix();
 	private static var sNativeTextField:openfl.text.TextField = new openfl.text.TextField();
 	
+	private var mLeading:Null<Int>;
+	private var mLetterSpacing:Null<Int>;
+	public var leading(get, set):Null<Int>;
+	public var letterSpacing(get, set):Null<Int>;
 	private var isHorizontalAutoSize(get, null):Bool;
 	private var isVerticalAutoSize(get, null):Bool;
 	
@@ -223,7 +227,7 @@ class TextField extends DisplayObjectContainer
 			mTextBounds = new Rectangle();
 		
 		var texture:Texture;
-		var scale:Float = Starling.ContentScaleFactor;
+		var scale:Float = Starling.current.contentScaleFactor;
 		var bitmapData:BitmapData = renderText(scale, mTextBounds);
 		var format:Context3DTextureFormat = sDefaultTextureFormat;
 		var maxTextureSize:Int = Texture.maxSize;
@@ -305,8 +309,13 @@ class TextField extends DisplayObjectContainer
 		var align = TextFormatAlign.CENTER;
 		if (hAlign == HAlign.LEFT) align = TextFormatAlign.LEFT;
 		else if (hAlign == HAlign.RIGHT) align = TextFormatAlign.RIGHT;
+		else if (hAlign == HAlign.JUSTIFY) align = TextFormatAlign.JUSTIFY;
 		var textFormat:TextFormat = new TextFormat(mFontName, cast(mFontSize * scale, Null<Int>), mColor, mBold, mItalic, mUnderline, null, null, align, null, null, null, null);
 		textFormat.kerning = mKerning;
+		if(leading != null)
+			textFormat.leading = mLeading;			
+		if(letterSpacing != null)
+			textFormat.letterSpacing = mLetterSpacing;
 		
 		sNativeTextField.defaultTextFormat = textFormat;
 		sNativeTextField.width = width;
@@ -432,7 +441,7 @@ class TextField extends DisplayObjectContainer
 				bounds = bounds.union(filterBounds);
 			}
 			
-			if (hAlign == HAlign.LEFT && bounds.x < 0)
+			if (hAlign == HAlign.LEFT || hAlign == HAlign.JUSTIFY && bounds.x < 0)
 				resultOffset.x = -bounds.x;
 			else if (hAlign == HAlign.RIGHT && bounds.y > 0)
 				resultOffset.x = -(bounds.right - textWidth);
@@ -467,6 +476,14 @@ class TextField extends DisplayObjectContainer
 			mQuadBatch.reset();
 		
 		var bitmapFont:BitmapFont = getBitmapFont(mFontName);
+		
+		if(leading != null)
+			bitmapFont.lineHeight = mLeading;			
+		if(letterSpacing != null)
+			bitmapFont.letterSpacing = mLetterSpacing;
+		else
+			bitmapFont.letterSpacing = 0;
+		
 		if (bitmapFont == null) {
 			throw new Error("Bitmap font not registered: " + mFontName);
 		}
@@ -751,6 +768,30 @@ class TextField extends DisplayObjectContainer
 		return value;
 	}
 	
+	/* */
+	public function get_leading():Null<Int> { return mLeading; }
+	public function set_leading(value:Null<Int>):Null<Int>
+	{
+		if (mLeading != value)
+		{
+			mLeading = value;
+			mRequiresRedraw = true;
+		}
+		return value;
+	}
+	
+	/* */
+	public function get_letterSpacing():Null<Int> { return mLetterSpacing; }
+	public function set_letterSpacing(value:Null<Int>):Null<Int>
+	{
+		if (mLetterSpacing != value)
+		{
+			mLetterSpacing = value;
+			mRequiresRedraw = true;
+		}
+		return value;
+	}
+	
 	/** Indicates whether the font size is scaled down so that the complete text fits
 	 *  into the text field. @default false */
 	private function get_autoScale():Bool { return mAutoScale; }
@@ -867,6 +908,18 @@ class TextField extends DisplayObjectContainer
 	public static function getBitmapFont(name:String):BitmapFont
 	{
 		return bitmapFonts[name.toLowerCase()];
+	}
+	
+	public function charIdAt(location:Point):Int
+	{
+		var bitmapFont:BitmapFont = getBitmapFont(mFontName);		
+		return bitmapFont.getCharIdAtPoint( location );
+	}
+	
+	public function getCharPos(id:Int):Point
+	{
+		var bitmapFont:BitmapFont = getBitmapFont(mFontName);		
+		return bitmapFont.getCharPosition( id );
 	}
 	
 	/** Stores the currently available bitmap fonts. Since a bitmap font will only work

@@ -1,7 +1,7 @@
-package openfl.display3D.textures; #if !flash
-
+package starling.openfl; #if (!flash)
 
 import openfl.display3D.Context3D;
+import openfl.display3D.textures.TextureBase;
 import openfl.gl.GL;
 import openfl.gl.GLTexture;
 import openfl.gl.GLFramebuffer;
@@ -12,9 +12,9 @@ import openfl.utils.UInt8Array;
 
 using openfl.display.BitmapData;
 
-
-@:final class Texture extends TextureBase {
+@:native("openfl.display3D.textures.Texture") @:final class Texture extends TextureBase {
 	
+	private static var internalFormat:Int = -1;
 	
 	public var optimizeForRenderToTexture:Bool;
 	
@@ -25,6 +25,14 @@ using openfl.display.BitmapData;
 		optimizeForRenderToTexture = optimize;
 
 		mipmapsGenerated = false;
+		
+		if (internalFormat == -1){
+			#if cpp
+			internalFormat = GL.BGRA_EXT;
+			#else
+			internalFormat = GL.RGBA;
+			#end
+		}
 		
 		#if (js || neko)
 		if (optimizeForRenderToTexture == null) optimizeForRenderToTexture = false;
@@ -43,7 +51,6 @@ using openfl.display.BitmapData;
 			
 		}
 		#end
-		
 	}
 	
 	
@@ -54,44 +61,35 @@ using openfl.display.BitmapData;
 	}
 	
 	
-	public function uploadFromBitmapData (bitmapData:BitmapData, miplevel:Int = 0):Void
-	{	
+	public function uploadFromBitmapData (bitmapData:BitmapData, miplevel:Int = 0):Void {
+		
 		#if openfl_legacy
-		var p = BitmapData.getRGBAPixels (bitmapData);
-		#elseif js
-		var p = ByteArray.__ofBuffer (@:privateAccess (bitmapData.image).data.buffer);
-		#else
-		var p = @:privateAccess (bitmapData.__image).data.buffer;
-		#end
-
+		
+		var pixels = BitmapData.getRGBAPixels (bitmapData);
+		
 		width = bitmapData.width;
 		height = bitmapData.height;
-
-		var source = new UInt8Array (p.length);
-		var endian = p.endian;
-		p.endian = "littleEndian";
-		p.position = 0;
-
-		var i:Int = 0;
-
-		while (p.position < p.length) {
-
-			var c:Int = p.readUnsignedInt ();
-			var a:Int = ((c >>> 24) & 0xFF) + 1;
-
-			var r = (((((c       ) & 0xFF) + 1) * a) >>> 8) - 1;
-			var g = (((((c >>>  8) & 0xFF) + 1) * a) >>> 8) - 1;
-			var b = (((((c >>> 16) & 0xFF) + 1) * a) >>> 8) - 1;
-
-			source[i++] = (r == -1) ? 0 : r;
-			source[i++] = (g == -1) ? 0 : g;
-			source[i++] = (b == -1) ? 0 : b;
-			source[i++] = a - 1;
-
+		
+		uploadFromByteArray (pixels, 0, miplevel);
+		
+		#else
+		
+		var image = bitmapData.image;
+		
+		if (!image.premultiplied && image.transparent) {
+			
+			image = image.clone ();
+			image.premultiplied = true;
+			
 		}
-		p.endian = endian;
-
-		uploadFromUInt8Array(source, miplevel);
+		
+		width = image.width;
+		height = image.height;
+		
+		uploadFromUInt8Array (image.data, miplevel);
+		
+		#end
+		
 	}
 	
 	
@@ -132,15 +130,13 @@ using openfl.display.BitmapData;
 			
 		}
 		
-		GL.texImage2D (GL.TEXTURE_2D, miplevel, GL.RGBA, width, height, 0, GL.RGBA, GL.UNSIGNED_BYTE, data);
+		GL.texImage2D (GL.TEXTURE_2D, miplevel, internalFormat, width, height, 0, internalFormat, GL.UNSIGNED_BYTE, data);
 		GL.bindTexture (GL.TEXTURE_2D, null);
 		
 	}
 	
 	
 }
-
-
 #else
-typedef Texture = flash.display3D.textures.Texture;
+typedef Texture = openfl.display3D.textures.Texture;
 #end

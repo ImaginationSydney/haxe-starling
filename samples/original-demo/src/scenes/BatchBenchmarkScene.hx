@@ -1,6 +1,6 @@
 package scenes;
 
-import flash.system.System;
+import openfl.system.System;
 import sample.Main;
 import starling.display.QuadBatch;
 import starling.textures.Texture;
@@ -26,7 +26,7 @@ class BatchBenchmarkScene extends Scene
 	private var mWaitFrames:Int;
 	
 	private var activeChange:Int = 0;
-	private var texture:Texture;
+	private var texture:starling.textures.Texture;
 	private var quadBatch:QuadBatch;
 	private var quadBatchs:Array<QuadBatch>;
 	private var images:Array<Image>;

@@ -271,7 +271,7 @@ class MiniBitmapFont
 	public static var texture(get, null):Texture;
 	public static var xml(get, null):Xml;
 	
-	public static function get_texture():Texture
+	private static function get_texture():Texture
 	{
 		var bitmapData:BitmapData = getBitmapData();
 		var texture:Texture = Texture.fromBitmapData(bitmapData, false);
@@ -303,5 +303,5 @@ class MiniBitmapFont
 		return bmpData;
 	}
 	
-	public static function get_xml():Xml { return MiniBitmapFont.XML_DATA; }
+	private static function get_xml():Xml { return MiniBitmapFont.XML_DATA; }
 }

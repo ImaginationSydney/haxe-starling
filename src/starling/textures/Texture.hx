@@ -10,7 +10,7 @@
 
 package starling.textures;
 
-import flash.events.Event;
+import openfl.events.Event;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display3D.Context3D;
@@ -116,6 +116,7 @@ import starling.utils.VertexData;
 
 class Texture
 {
+	static private var TEXTURE_READY:String = "textureReady"; // for backwards compatibility
 	
 
 	public var frame(get, null):Rectangle;
@@ -174,7 +175,7 @@ class Texture
 		{
 			texture = fromBitmapData(cast data, options.mipMapping, options.optimizeForRenderToTexture, options.scale, options.format, options.repeat);
 		}
-		else if (Std.is(data, ByteArray))
+		else if (Std.is(data, ByteArrayData))
 		{
 			texture = fromAtfData(cast data, options.scale, options.mipMapping, options.onReady, options.repeat);
 		}
@@ -215,7 +216,7 @@ class Texture
 				texture.root.uploadBitmap(Type.createInstance(assetClass, []));
 			};
 		}
-		else if (Std.is(asset, ByteArray))
+		else if (Std.is(asset, ByteArrayData))
 		{
 			texture = Texture.fromAtfData(cast asset, scale, mipMapping, null, repeat);
 			texture.root.onRestore = function():Void
@@ -302,10 +303,10 @@ class Texture
 	public static function fromAtfData(data:ByteArray, scale:Float=1, useMipMaps:Bool=true,
 									   async:TextureFunction=null, repeat:Bool=false):Texture
 	{
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		if (context == null) throw new MissingContextError();
 		var atfData:AtfData = new AtfData(data);
-		var nativeTexture:flash.display3D.textures.Texture = context.createTexture(
+		var nativeTexture:openfl.display3D.textures.Texture = context.createTexture(
 			atfData.width, atfData.height, atfData.format, false);
 		var concreteTexture = new ConcreteTexture(nativeTexture, atfData.format,
 			atfData.width, atfData.height, useMipMaps && atfData.numTextures > 1,
@@ -382,16 +383,18 @@ class Texture
 	{
 		return fromVideoAttachment("Camera", camera, scale, onComplete);
 	}*/
-
+	
+	private static var onCompleteLookup:Map<TextureBase, TextureFunction> = new Map();
+	private static var textureLookup:Map<TextureBase, ConcreteVideoTexture> = new Map();
 	private static function fromVideoAttachment(type:String, attachment:Dynamic,
 												scale:Float, onComplete:TextureFunction):Texture
 	{
-		var TEXTURE_READY:String = "textureReady"; // for backwards compatibility
+		
 
 		if (!SystemUtil.supportsVideoTexture)
 			throw new NotSupportedError("Video Textures are not supported on this platform");
 
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		if (context == null) throw new MissingContextError();
 		
 		var func:Dynamic = Reflect.getProperty(context, "createVideoTexture");
@@ -399,29 +402,33 @@ class Texture
 		var baseFunc:Dynamic = Reflect.getProperty(base, "attach" + type);
 		Reflect.callMethod(base, baseFunc, [attachment]); // base["attach" + type](attachment);
 		
-		
-		
 		var texture:ConcreteVideoTexture = new ConcreteVideoTexture(base, scale);
 		texture.onRestore = function():Void
 		{
 			texture.root.attachVideo(type, attachment);
 		};
 		
-		//base.addEventListener(TEXTURE_READY, OnTextureReady);
-		base.addEventListener(TEXTURE_READY, function(event:Dynamic):Void
-		{
-			//base.removeEventListener(TEXTURE_READY, OnTextureReady);
-			StarlingUtils.execute(onComplete, [texture]);
-		});
+		onCompleteLookup.set(base, onComplete);
+		textureLookup.set(base, texture);
+		
+		base.addEventListener(TEXTURE_READY, OnTextureReady);
 		
 		return texture;
 	}
 	
-	/*private static function OnTextureReady(event:Dynamic):Void 
+	private static function OnTextureReady(event:Event):Void 
 	{
+		var base:TextureBase = event.target;
 		base.removeEventListener(TEXTURE_READY, OnTextureReady);
-		StarlingUtils.execute(onComplete, texture);
-	}*/
+		
+		var onComplete:TextureFunction = onCompleteLookup.get(base);
+		onCompleteLookup.remove(base);
+		
+		var texture:ConcreteVideoTexture = textureLookup.get(base);
+		textureLookup.remove(base);
+		
+		StarlingUtils.execute(onComplete, [texture]);
+	}
 
 	/** Creates a texture with a certain size and color.
 	 *
@@ -470,25 +477,23 @@ class Texture
 								 mipMapping:Bool=true, optimizeForRenderToTexture:Bool=false,
 								 scale:Float=-1, format:Context3DTextureFormat=null, repeat:Bool=false):Texture
 	{
-		if (scale <= 0) scale = Starling.ContentScaleFactor;
+		if (scale <= 0) scale = Starling.current.contentScaleFactor;
 		if (format == null) format = Context3DTextureFormat.BGRA;
 		
 		var actualWidth:Int, actualHeight:Int;
 		var nativeTexture:TextureBase;
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		
 		if (context == null) throw new MissingContextError();
 		
 		var origWidth:Int  = Std.int(width  * scale);
 		var origHeight:Int = Std.int(height * scale);
 		
-		
 		var useRectTexture:Bool = !mipMapping && !repeat &&
 			Starling.current.profile != Context3DProfile.BASELINE_CONSTRAINED &&
 			Reflect.hasField(context, "createRectangleTexture") && 
 			format != Context3DTextureFormat.COMPRESSED && 
 			format != Context3DTextureFormat.COMPRESSED_ALPHA;
-		
 		
 		if (useRectTexture)
 		{
@@ -504,9 +509,18 @@ class Texture
 		{
 			actualWidth  = StarlingUtils.getNextPowerOfTwo(origWidth);
 			actualHeight = StarlingUtils.getNextPowerOfTwo(origHeight);
-
+			#if flash
+				// hack due to wierd bug
+				if (mipMapping) {
+					if (actualWidth < actualHeight) actualWidth = actualHeight;
+					if (actualHeight < actualWidth) actualHeight = actualWidth;
+				}
+			#end
 			nativeTexture = context.createTexture(actualWidth, actualHeight, format,
 												  optimizeForRenderToTexture);
+			#if js 
+				cast(nativeTexture, openfl.display3D.textures.Texture).uploadFromUInt8Array(null);
+			#end
 		}
 		
 		var concreteTexture:ConcreteTexture = new ConcreteTexture(nativeTexture, format,
@@ -630,4 +644,4 @@ class Texture
 	}
 }
 
-typedef TextureFunction = Dynamic -> Void;
+typedef TextureFunction = Dynamic;

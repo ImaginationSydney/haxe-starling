@@ -1,6 +1,6 @@
 package utils;
 
-import flash.geom.Point;
+import openfl.geom.Point;
 import starling.utils.StarlingUtils;
 
 import starling.display.DisplayObject;

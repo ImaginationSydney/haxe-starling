@@ -9,6 +9,8 @@ Samples
 Original Starling Demo
 * [Flash Version] (http://peteshand.net/starling/haxe-stage3d/index.html)
 * [HTML5 Version] (http://peteshand.net/starling/haxe-webgl/index.html)
+* [Desktop AIR Version] (http://peteshand.net/starling/haxe-air-exe/OpenFLStarlingSamples.exe)
+* [Android AIR Version] (http://peteshand.net/starling/haxe-air-apk/OpenFLStarlingSamples.apk)
 * [CPP Version] (http://peteshand.net/starling/haxe-cpp/OpenFLStarlingSamples.zip) (out of date)
 * [Original AS3 Version] (http://peteshand.net/starling/as3-stage3d/index.html)
 
@@ -26,14 +28,13 @@ Dependencies:
 
 Missing functionality / work in progress:
 -------------------
-* All targets
+* HTML5 and Native targets
   * ATF texture format
 * Native
   * Bitmap Fonts
   * html text styling
   * Sound Triggering
   * Render Texture
-* HTML5 and Native
   * Masks
   * Filters
 

@@ -39,7 +39,7 @@ class Canvas extends DisplayObject
 
 	private var mVertexData:VertexData;
 	private var mVertexBuffer:VertexBuffer3D;
-	private var mIndexData:Vector<UInt>;
+	private var mIndexData:Array<UInt>;
 	private var mIndexBuffer:IndexBuffer3D;
 
 	private var mFillColor:UInt;
@@ -56,7 +56,7 @@ class Canvas extends DisplayObject
 		super();
 		mPolygons   = new Array<Polygon>();
 		mVertexData = new VertexData(0);
-		mIndexData  = new Vector<UInt>();
+		mIndexData  = new Array<UInt>();
 		mSyncRequired = false;
 		
 		mFillColor = 0xffffff;
@@ -127,7 +127,7 @@ class Canvas extends DisplayObject
 	public function clear():Void
 	{
 		mVertexData.numVertices = 0;
-		mIndexData.length  = 0;
+		mIndexData.splice(0, mIndexData.length);
 	}
 
 	/** @inheritDoc */
@@ -144,7 +144,7 @@ class Canvas extends DisplayObject
 		sRenderAlpha[0] = sRenderAlpha[1] = sRenderAlpha[2] = 1.0;
 		sRenderAlpha[3] = parentAlpha * this.alpha;
 		
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		if (context == null) throw new MissingContextError();
 		
 		// apply the current blend mode
@@ -233,7 +233,7 @@ class Canvas extends DisplayObject
 	{
 		destroyBuffers();
 		
-		var context:Context3D = Starling.Context;
+		var context:Context3D = Starling.current.context;
 		if (context == null) throw new MissingContextError();
 		
 		var numVertices:Float = mVertexData.numVertices;

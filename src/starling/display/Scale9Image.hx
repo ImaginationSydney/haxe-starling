@@ -25,6 +25,8 @@ class Scale9Image extends Sprite
 	
 	private var _width:Float;
 	private var _height:Float;
+	private var _color:UInt;
+	public var color(get, set):UInt;
 	
 	
 	function getScaleIfSmaller():Bool
@@ -69,6 +71,27 @@ class Scale9Image extends Sprite
 		return _width;
 	}
 	
+	public function get_color( ):UInt
+	{
+		return _color;
+	}
+	
+	public function set_color( value:UInt ):UInt
+	{
+		_color = value;
+		
+		_tl.color = value;
+		_tc.color = value;
+		_tr.color = value;
+		_cl.color = value;
+		_cc.color = value;
+		_cr.color = value;
+		_bl.color = value;
+		_bc.color = value;
+		_br.color = value;
+		return value;
+	}
+	
 	public function new(texture:Texture, centerRect:Rectangle):Void
 	{
 		super();
@@ -79,7 +102,7 @@ class Scale9Image extends Sprite
 		_width = _tW;
 		_height = _tH;
 		
-		_tl = new Image(Texture.fromTexture(texture, new Rectangle(0,0,_grid.x,_grid.y)));
+		_tl = new Image(Texture.fromTexture(texture, new Rectangle(0, 0, _grid.x, _grid.y)));
 		
 		_tc = new Image(Texture.fromTexture(texture, new Rectangle(_grid.x,0,_grid.width,_grid.y)));
 		

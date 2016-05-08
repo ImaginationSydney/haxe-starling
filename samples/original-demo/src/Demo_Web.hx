@@ -1,9 +1,9 @@
 package;
 
-import flash.display.Bitmap;
-import flash.display.Sprite;
-import flash.system.Capabilities;
-import flash.utils.setTimeout;
+import openfl.display.Bitmap;
+import openfl.display.Sprite;
+import openfl.system.Capabilities;
+import openfl.utils.setTimeout;
 
 import starling.core.Starling;
 import starling.events.Event;

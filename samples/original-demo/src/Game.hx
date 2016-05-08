@@ -1,7 +1,7 @@
 package;
 
-import flash.system.System;
-import flash.ui.Keyboard;
+import openfl.system.System;
+import openfl.ui.Keyboard;
 import openfl.Assets;
 import scenes.AnimationScene;
 import scenes.BatchBenchmarkScene;
@@ -73,12 +73,16 @@ class Game extends Sprite
 		sAssets = assets;
 		
 		//this.stage.color = 0xFFFF0000;
-		var texture:Texture = assets.getTexture('background');
-		addChild(new Image(texture));
+		var texture:starling.textures.Texture = assets.getTexture('background');
+		var backgroundImage:Image = new Image(texture);
+		addChild(backgroundImage);
 		showMainMenu();
 		
+		backgroundImage.scaleX = Starling.current.nativeStage.stageWidth / 320;
+		backgroundImage.scaleY = Starling.current.nativeStage.stageHeight / 480;
+		
 		/*var bmd:BitmapData = Assets.getBitmapData("assets/textures/1x/background.jpg");
-		var texture:Texture = Texture.fromBitmapData(bmd);
+		var texture:starling.textures.Texture = starling.textures.Texture.fromBitmapData(bmd);
 		addChild(new Image(texture));
 		showMainMenu();*/
 		
@@ -98,6 +102,8 @@ class Game extends Sprite
 			mMainMenu = new MainMenu();
 		
 		addChild(mMainMenu);
+		
+		mMainMenu.scaleX = mMainMenu.scaleY = Starling.current.nativeStage.stageWidth / 320;
 	}
 	
 	private function onKey(event:KeyboardEvent):Void
@@ -105,7 +111,7 @@ class Game extends Sprite
 		if (event.keyCode == Keyboard.SPACE)
 			Starling.current.showStats = !Starling.current.showStats;
 		else if (event.keyCode == Keyboard.X)
-			Starling.Context.dispose();
+			Starling.current.context.dispose();
 	}
 	
 	private function onButtonTriggered(event:Event):Void
@@ -140,6 +146,7 @@ class Game extends Sprite
 		}
 		mMainMenu.removeFromParent();
 		addChild(mCurrentScene);
+		mCurrentScene.scaleX = mCurrentScene.scaleY = Starling.current.nativeStage.stageWidth / 320;
 	}
 	
 	public static function get_assets():AssetManager { return sAssets; }

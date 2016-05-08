@@ -51,26 +51,30 @@ class SystemUtil
 		sPlatform = Capabilities.version.substr(0, 3);
 		sVersion = Capabilities.version.substr(4);
 		
-		trace("FIX");
-		/*try
-		{
-			var nativeAppClass:Dynamic = getDefinitionByName("flash.desktop::NativeApplication");
-			var nativeApp:EventDispatcher = nativeAppClass["nativeApplication"] as EventDispatcher;
-
-			nativeApp.addEventListener(Event.ACTIVATE, onActivate, false, 0, true);
-			nativeApp.addEventListener(Event.DEACTIVATE, onDeactivate, false, 0, true);
-
-			var appDescriptor:Xml = nativeApp["applicationDescriptor"];
-			var ns:Namespace = appDescriptor.namespace();
-			var ds:String = appDescriptor.ns::initialWindow.ns::depthAndStencil.toString().toLowerCase();
-
-			sSupportsDepthAndStencil = (ds == "true");
-			sAIR = true;
-		}
-		catch (e:Error)
-		{*/
+		#if flash
+			try
+			{
+				var nativeAppClass:Dynamic = Type.resolveClass("flash.desktop::NativeApplication");
+				var nativeApp:EventDispatcher = cast(Reflect.getProperty(nativeAppClass, "nativeApplication"));
+				
+				nativeApp.addEventListener(Event.ACTIVATE, onActivate, false, 0, true);
+				nativeApp.addEventListener(Event.DEACTIVATE, onDeactivate, false, 0, true);
+				
+				// TODO: fix to work on flash target
+				//var appDescriptor:Dynamic = Reflect.getProperty(nativeApp, "applicationDescriptor");
+				//var ns:Namespace = appDescriptor.namespace();
+				//var ds:String = appDescriptor.ns::initialWindow.ns::depthAndStencil.toString().toLowerCase();
+				//sSupportsDepthAndStencil = (ds == "true");
+				
+				sAIR = true;
+			}
+			catch (e:Error)
+			{
+				sAIR = false;
+			}
+		#else
 			sAIR = false;
-		//}
+		#end
 	}
 	
 	private static function onActivate(event:Dynamic):Void
@@ -167,6 +171,11 @@ class SystemUtil
 	 *  applications (not the Flash Player). */
 	public static function get_supportsVideoTexture():Bool
 	{
-		return Type.getInstanceFields(Context3D).indexOf("supportsVideoTexture") != -1;
+		try {
+			return Reflect.getProperty(Context3D, "supportsVideoTexture");
+		}catch (e:Dynamic) {
+			return false;
+		}
+		//return Type.getInstanceFields(Context3D).indexOf("supportsVideoTexture") != -1;
 	}
 }

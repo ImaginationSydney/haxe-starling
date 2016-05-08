@@ -10,11 +10,11 @@
 
 package starling.display;
 
-import flash.display.BitmapData;
-import flash.errors.IllegalOperationError;
-import flash.geom.Matrix3D;
-import flash.geom.Point;
-import flash.geom.Vector3D;
+import openfl.display.BitmapData;
+import openfl.errors.IllegalOperationError;
+import openfl.geom.Matrix3D;
+import openfl.geom.Point;
+import openfl.geom.Vector3D;
 
 import starling.core.RenderSupport;
 import starling.core.Starling;

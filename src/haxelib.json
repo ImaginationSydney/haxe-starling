@@ -1,13 +1,13 @@
 {
 	"name": "starling",
-	"url": "https://github.com/peteshand/openfl-starling",
+	"url": "https://github.com/Haxeling/haxe-starling",
 	"license": "MIT",
 	"tags": [ "starling", "2d", "gpu", "openfl", "flash", "air", "js", "web", "cpp" ],
 	"description": "GPU powered 2D rendering engine which mimics the conventional Flash display list architecture",
-	"version": "0.3.8",
-	"releasenote": "scale9image added",
-	"contributors": [ "p.j.shand" ],
+	"version": "0.5.2",
+	"releasenote": "small improvements",
+	"contributors": [ "p.j.shand", "tbyrne" ],
 	"dependencies": {
-		"openfl": ""
+		
 	}
 }
